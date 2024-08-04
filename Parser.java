@@ -129,13 +129,72 @@ public class Parser {
 
     }
 
+    /*
+        GRAMATICA USADA
+
+        S  -> E1;
+        E1 -> E2T
+        T  -> +E2T | -E2T | lambda
+        E2 -> E3G
+        G  -> *E3G | /E3G | %E3G | lambda
+        E3 -> E4H
+        H  -> ^E4H | lambda
+        E4 -> -E4 | (E1) | number
+
+    */
+
     private boolean S() {
-        return E() && term(Token.SEMI);
+        return E1() && term(Token.SEMI);
     }
 
-    private boolean E() {
-        return false;
+    private boolean E1() {
+        if (!E2()) return false;
+        return T();
     }
 
-    /* TODO: sus otras funciones aqui */
+    private boolean T() {
+        if (term(Token.PLUS) || term(Token.MINUS)) {
+            if (!E2()) return false;
+            return T();
+        }
+        return true;
+    }
+
+    private boolean E2() {
+        if (!E3()) return false;
+        return G();
+    }
+
+    private boolean G() {
+        if (term(Token.MULT) || term(Token.DIV) || term(Token.MOD)) {
+            if (!E3()) return false;
+            return G();
+        }
+        return true;
+    }
+
+    private boolean E3() {
+        if (!E4()) return false;
+        return H();
+    }
+
+    private boolean H() {
+        if (term(Token.EXP)) {
+            if (!E4()) return false;
+            return H();
+        }
+        return true;
+    }
+
+    private boolean E4() {
+        if (term(Token.MINUS)) {
+            return E4();
+        } else if (term(Token.LPAREN)) {
+            if (!E1()) return false;
+            return term(Token.RPAREN);
+        } else {
+            return term(Token.NUMBER);
+        }
+    }
+    
 }
